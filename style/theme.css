@@ -1,0 +1,114 @@
+* {
+    font-family:Arial, Helvetica, sans-serif;
+}
+label {
+    font-size:11px;
+}
+.header {
+    width:100%;
+    text-align:left;
+    font-weight:600;
+    margin-bottom:3px;
+}
+
+/* User information controls */
+.user {
+    margin-bottom:1rem;
+    padding:.5rem;
+    border-bottom:1px solid lightgray;
+}
+
+/* Conversation controls */
+.conversations {
+    padding:.5rem;
+}
+#conversation-list{
+    margin-top:.5rem;
+}
+.conversation {
+    font-size:.8rem;
+    padding:.5rem;
+    margin-left:-.5rem;
+    border-bottom:.5px solid lightgray;
+    color:slategray;
+    cursor:pointer;
+}
+.conversation-names {
+    font-size:.7rem;
+}
+.conversation-messages {
+    float:right;
+}
+.conversation:hover {
+    background-color:gray;
+    color:white;
+}
+.conversation:last-child {
+    border-bottom:none;
+}
+
+
+/* Draft Controls */
+.draft-wrapper{
+    position:fixed;
+    width:74%;
+    bottom:0;
+    right:0;
+    border-top:1px solid lightgray;
+    background-color:white;
+    box-shadow:1px 1px 2px gray;
+}
+.draft {
+    padding:.5rem;
+}
+#compose-to {
+    width:100%;
+}
+#compose-message {
+    width:100%;
+}
+
+/* Message Controls */
+.chat {
+    overflow-y:auto;
+}
+.message {
+    font-size:.8rem;
+    display:block;
+}
+.message .contents {
+    padding:.5rem;
+    margin:.25rem;
+    border-radius:5px;
+    color:white;
+    display:inline-block;
+}
+.incoming {
+    text-align:left;
+}
+.incoming .contents {
+    background-color:slategray;
+}
+.outgoing {
+    text-align:right;
+}
+.outgoing .contents {
+    background-color:steelblue;
+}
+
+
+/* Display utilities */
+.split {
+    display:inline-block;
+    width:49%;
+}
+.split-1 {
+    vertical-align:top;
+    display:inline-block;
+    width:25%;
+}
+.split-3 {
+    vertical-align:top;
+    display:inline-block;
+    width:74%;
+}
