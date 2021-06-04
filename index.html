@@ -91,17 +91,21 @@
             });
 
             //when message is sent
-            document.getElementById("send-message").addEventListener("click",(e)=>{
-                let authProfile = authenticationSubscription.get();
-                let newMessage = {
-                    sent: (new Date()).toJSON(), 
-                    from: authProfile.id,
-                    to: authProfile.view.conversation.filter(id=>id!==authProfile.id),
-                    message: document.getElementById("compose-message").value
-                };
-                let messages = messageSubscription.get();
-                messages.push(newMessage);
-                messageSubscription.publish(messages);
+            document.getElementById("compose-message").addEventListener("keydown",(e)=>{
+                if (e.keyCode === 13 && !e.shiftKey) {
+                    e.preventDefault()
+                    let authProfile = authenticationSubscription.get();
+                    let newMessage = {
+                        sent: (new Date()).toJSON(), 
+                        from: authProfile.id,
+                        to: authProfile.view.conversation.filter(id=>id!==authProfile.id),
+                        message: document.getElementById("compose-message").value
+                    };
+                    let messages = messageSubscription.get();
+                    messages.push(newMessage);
+                    messageSubscription.publish(messages);
+                    document.getElementById("compose-message").value = "";
+                }
             });
 
 
@@ -183,7 +187,7 @@
         
         let resizeDebouncer = new Debouncer();
         function affixChatHeight(){
-            document.querySelector(".chat").style="max-height:"+(window.innerHeight-230)+"px";
+            document.querySelector(".chat").style="max-height:"+(window.innerHeight-189)+"px";
         }
 
         window.setConversation=setConversation; //accessible via window
@@ -204,13 +208,13 @@
     <div class="split-3">
         <div class="user">
             <div class="header">User Info</div>
-            <div class="split">
+            <div class="d-inline-block">
                 <label>User ID</label><br>
-                <input id="user-id" type="text" disabled><br/><br/>
+                <input id="user-id" class="font-control" type="text" disabled>
             </div>
-            <div class="split">
+            <div class="d-inline-block">
                 <label>Name</label><br/>
-                <input id="edit-user-name" type="text" placeholder="enter your name"/><br/><br/>
+                <input id="edit-user-name" class="font-control" type="text" placeholder="enter your name"/>
             </div>
         </div>
         <div class="chat">
@@ -223,12 +227,11 @@
         <div class="draft">
             <div class="split-1">
                 <label>To</label><br/>
-                <select id="compose-to" multiple style="height:62px;"></select><br/>
+                <select id="compose-to" class="font-control" multiple></select><br/>
             </div>
             <div class="split-3">
                 <label>Message</label><br/>
-                <textarea id="compose-message"></textarea><br>
-                <button id="send-message">send</button>
+                <textarea id="compose-message" class="font-control" placeholder="enter a message"></textarea>
             </div>
         </div>
     </div>
