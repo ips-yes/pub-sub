@@ -13,7 +13,7 @@ Some frontend frameworks, especially those that are unopinionated, leave it up t
 ## What You need
 
 * Intermediate knowledge of JavaScript
-* Basic knowledge of Object Oriented Design (modules,classes)
+* Basic knowledge of Object-Oriented Design (modules,classes)
 * Basic knowledge of HTML
 
 ## Technology Stack
