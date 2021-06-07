@@ -113,6 +113,25 @@ label {
     display:inline-block;
     width:74%;
 }
+
+@media only screen and (max-width: 460px) {
+    .split-1 {
+        width:100%;
+    }
+    .split-3 {
+        width:100%;
+    }
+    .draft-wrapper {
+        width:100%;
+    }
+    .conversation-list {
+        overflow:auto;
+        max-height:50px;
+    }
+    input {
+        max-width:100px;
+    }
+}
 .d-inline-block{
     display:inline-block;
 }
