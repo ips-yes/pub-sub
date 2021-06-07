@@ -105,6 +105,7 @@
                     messages.push(newMessage);
                     messageSubscription.publish(messages);
                     document.getElementById("compose-message").value = "";
+                    affixChatHeight()
                 }
             });
 
@@ -187,7 +188,8 @@
         
         let resizeDebouncer = new Debouncer();
         function affixChatHeight(){
-            document.querySelector(".chat").style="max-height:"+(window.innerHeight-189)+"px";
+            let affixHeight = (window.innerHeight-(window.innerWidth>459?189:260+document.querySelector(".conversations").offsetHeight));
+            document.querySelector(".chat").style="max-height:"+affixHeight+"px;height:"+affixHeight+"px;";
         }
 
         window.setConversation=setConversation; //accessible via window
