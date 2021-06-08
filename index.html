@@ -15,7 +15,7 @@
         import Debouncer from './services/debouncer.js';
 
         let topics = {
-            authenticated:{
+            settings:{
                 id:1,
                 view:{
                     conversation:[1,2,3]
@@ -53,12 +53,12 @@
             bindConversations();
 
             /* Subscriptions */
-            let authenticationSubscription = PubSubService.subscribe(["authenticated"],(data)=>{
+            let settingsSubscription = PubSubService.subscribe(["settings"],(data)=>{
                 bindTo();
                 bindProfile();
                 bindMessages();
                 bindConversations();
-            }); //Subscribe if "authenticated" topic changes
+            }); //Subscribe if "settings" topic changes
             let userSubscription = PubSubService.subscribe(["users"],(data)=>{
                 bindTo();
                 bindProfile();
@@ -73,16 +73,16 @@
             /* Subscriber Listeners */
             //when compose to select box changes
             document.getElementById("compose-to").addEventListener("change",()=>{
-                let conversationFilter = [ authenticationSubscription.get().id].concat(Array.prototype.slice.call(document.querySelectorAll('#compose-to option:checked'),0).map((v,i,a)=> { 
+                let conversationFilter = [ settingsSubscription.get().id].concat(Array.prototype.slice.call(document.querySelectorAll('#compose-to option:checked'),0).map((v,i,a)=> { 
                     return parseInt(v.value); 
                 })).sort((a,b)=>a-b)
                 console.log(conversationFilter);
-                authenticationSubscription.publish({ view:{conversation:conversationFilter }});
+                settingsSubscription.publish({ view:{conversation:conversationFilter }});
             })
 
             //when name field changes
             document.getElementById("edit-user-name").addEventListener("change",(e)=>{
-                let currentUserID = authenticationSubscription.get().id;
+                let currentUserID = settingsSubscription.get().id;
                 let newUsersList = userSubscription.get().map((user)=>{
                     user.name = user.id===currentUserID ? e.target.value : user.name;
                     return user;
@@ -94,7 +94,7 @@
             document.getElementById("compose-message").addEventListener("keydown",(e)=>{
                 if (e.keyCode === 13 && !e.shiftKey) {
                     e.preventDefault()
-                    let authProfile = authenticationSubscription.get();
+                    let authProfile = settingsSubscription.get();
                     let newMessage = {
                         sent: (new Date()).toJSON(), 
                         from: authProfile.id,
@@ -122,18 +122,18 @@
         
         /* Binding/Rendering functions */
         function bindTo(){
-            let authProfile = PubSubService.get(["authenticated"]);
+            let authProfile = PubSubService.get(["settings"]);
             let usersList = PubSubService.get(["users"]);
             document.getElementById("compose-to").innerHTML = usersList.map(user=>user.id !== authProfile.id?`<option value="${user.id}" ${authProfile.view.conversation.indexOf(user.id)>=0?"selected":""}>${user.name}</option>`:"").join("");;
         }
         function bindProfile(){
-            let authProfile = PubSubService.get(["authenticated"]);
+            let authProfile = PubSubService.get(["settings"]);
             let userInformation = PubSubService.get(["users"]).find((user)=>user.id===authProfile.id);
             document.getElementById("user-id").value = userInformation.id;
             document.getElementById("edit-user-name").value = userInformation.name;
         }
         function bindMessages(){
-            let authProfile = PubSubService.get(["authenticated"]);
+            let authProfile = PubSubService.get(["settings"]);
             let usersList = PubSubService.get(["users"]);
             let messageList = PubSubService.get(["messages"]);
             document.getElementById("messages").innerHTML = messageList.filter((message)=>{
@@ -152,7 +152,7 @@
             }).join("");
         }
         function bindConversations(){
-            let authProfile = PubSubService.get(["authenticated"]);
+            let authProfile = PubSubService.get(["settings"]);
             let userDict = PubSubService.get(["users"]).reduce((accumulator,user)=>{
                 accumulator[user.id]=user
                 return accumulator;
@@ -183,7 +183,7 @@
         
         /* Setter functions */
         function setConversation(ids){
-            PubSubService.publish(["authenticated"],{view:{conversation:ids}});
+            PubSubService.publish(["settings"],{view:{conversation:ids}});
         }
         
         let resizeDebouncer = new Debouncer();

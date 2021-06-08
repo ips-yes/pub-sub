@@ -4,34 +4,18 @@
 
 The Publish & Subscribe pattern is generally defined as a software architecture paradigm where senders of messages, called publishers, send their messages to an intermediary broker which utilizes any form of classification to notify receivers, called subscribers, of those messages. The receivers who have subscribed to those classifications do not need to know who emitted the initial message, but rather only that the message falls under the classification that they have subscribed to. There are several libraries which implement Pub Sub models across a wide variety of domains, and even for the article written here, there are libraries that solve the same problem that can be applied to UI and State management such as mroderick’s PubSubJS. There’s SignalR, with which you can natively configure a Pub Sub model within asp.NET. JMS within Java. Google even has Pub/Sub Client libraries that you can implement within C++, C#, Go, Java, Node.js, PHP, Python, and Ruby. 
 
-So why should you write your own Pub Sub model? Importantly, being able to write a pub sub service from scratch in different environments across different languages can allow you to maintain a sensible software architecture for clients within a tight security and package approval process where you may not be granted the opportunity to use your favorite Pub Sub library or API. In some legacy code environments, you may have requirements that don’t allow you to use the syntax due to it’s un-availability within that version. Additionally, many frontend frameworks make it slightly easier to build tightly coupled components which quickly become overly complex if you manage to pass data between parents and children. A quick reminder of the structure of a Pub Sub service and how it works internally, can provide you insight into the types of problems that you can solve. In this article we will be going over the implementation of a Pub Sub service within the paradigm of UI & State Management.
+So why should you write your own Pub Sub model? The ability to write a pub sub service from scratch in different environments across different languages allows you to maintain a sensible software architecture for clients within a tight security and package approval process. These constraints may force you to build your own homegrown implementation instead of using your favorite Pub Sub library or API. In some legacy code environments, you may have requirements that don’t allow you to use the syntax due to its un-availability within that version. Additionally, many frontend frameworks make it slightly easier to build tightly coupled components. This can quickly become overly complex when passing data between parents and children. A quick reminder of the structure of a Pub Sub service and how it works internally, can provide insight into the types of problems that you can solve. In this article we will focus on the implementation of a Pub Sub service within the paradigm of UI & State Management.
 
-
-
+Basic Pub Sub architecture:
 ![Pub Sub Overview](./images/PubSubOverview.png)
 
-We chose UI & State management because it still illustrates the purpose and scope of a Pub Sub service implementation without involving the complicated cross platform elements that some many network based Pub Sub models employ. Some frontend frameworks, especially those that are unopinionated, leave it up to the developer to choose their own method of handling complex UI transformations from client data model changes. A "PubSub" service, within this context, is a simple and efficient way to share client data model updates among many components, without utilizing unnecessary resources. These resources in traditional models are usually spent creating observers or setters to underlying which can be an expensive process. 
-
-In a nutshell, a Pub Sub service allows a component to publish changes so that other components may be notified and allowed to perform some action related to it's purpose.
+We chose UI & State management because it still illustrates the purpose and scope of a Pub Sub service implementation without involving the complicated cross platform elements that some many network-based Pub Sub models employ. Some frontend frameworks, especially those that are unopinionated, leave it up to the developer to choose their own method of handling complex UI transformations from client data model changes. A Pub Sub service, within this context, is a simple and efficient way to share client data model updates among many components, without utilizing unnecessary resources. These resources in traditional models are usually spent creating observers or setters to underlying data which can be an expensive process. 
 
 ## Features
 
 1) Publish, Subscribe, Un-Subscribe, Get Topics
 2) Call Debouncing (Conserving procedural calls)
 3) Group Chat Communication Demonstration
-
-## What You need
-
-* Intermediate knowledge of JavaScript
-* Basic knowledge of Object-Oriented Design (modules,classes)
-* Basic knowledge of HTML
-
-## Technology Stack
-
-* HTML
-* JavaScript
-
-This article will refrain from using any specific frontend framework to remain agnostic to your desired project or business requirements
 
 ## Software Architecture 
 
@@ -75,15 +59,18 @@ A function which, when called, follows the path to the subscribed object in orde
 
 [Skip to Pub-Sub portion](#Step-3---Writing-our-Subscriber.js)
 
-## Client Story
+## Theoretical Client Story
 
 In a request to build a chat system, a client has requested that this system be able to do the following tasks:
 
-1) Keep track of the messagers name.
-2) Keep track of the messagers conversation history.
-3) Be able to change the messagers name at any time.
-4) Have the messagers name be updated within the conversation history.
+*Note our “messenger” is the user who is sending messages.
+
+1) Keep track of the messenger’s name.
+2) Keep track of the messenger’s conversation history.
+3) Be able to change the messenger’s name at any time.
+4) Have the messenger’s name be updated within the conversation history.
 5) Keep track of the date and time of each message.
+
 
 ## Design Notes
 
@@ -92,7 +79,11 @@ Notice that each of these items mentioned within the client story, make no menti
 1) Users
 2) Messages
 
-A conversation, even though it is described, is not necessarily a saved entity. Rather we can illustrate it as a view generated by code, which reduces data redundancy. Each of the Messagers are essentially users, with the caveat being that the currently authenticated user physically using the application is the messager. Rather than creating a dataset which models the business logic directly, I've decided to split the information into more atomic elements which can be virtually joined in order to meet the business requirements.
+With an additional domain to separate the client’s rendering:
+
+3) Settings
+
+A conversation, even though it is described, is not necessarily a saved entity. Rather it can also be a view generated by code, which reduces data redundancy. Each messenger is essentially a user, with the caveat being that the currently authenticated user physically using the application is the messenger. Rather than creating a dataset which models the business logic directly, we have decided to split the information into more atomic elements which can be virtually joined in order to meet the business requirements. For sake of clarity, the only additional domain of information that I would be storing will be the currently authenticated user’s settings. For example, which conversation should I open at any giventime? What user am I? Technically I could store this information within the user domain to determine this, but then I would be directly storing the users view information within the user data itself. This means that every time the user updates the conversation they are viewing, they would also be updating every component that relies on general user information. This seems unnecessary,so I have separated that additional domain of data as well below.
 
 ## Business Use Cases
 
@@ -102,13 +93,18 @@ In some business environments, it may be difficult or impossible to retrieve cli
 
 The working code and demo for this article can be found [here](https://github.com/ips-yes/pub-sub)
 
-## What's next?
+## What You need
 
-This model can be expanded to do MANY more things that aren't directly covered in the source guide like:
+* Intermediate knowledge of JavaScript
+* Basic knowledge of Object-Oriented Design (modules,classes)
+* Basic knowledge of HTML
 
-* Scoped data changes within subscriptions.
-* Partial updates data updates, reducing data size
-* GIT style change handling (to multi-component merge conflicts)
+## Technology Stack
+
+* HTML
+* JavaScript
+
+This article will refrain from using any specific frontend framework to remain agnostic to your desired project or business requirements
 
 ## Guide
 
@@ -164,7 +160,7 @@ Let's build a simple interface to show the users name, conversations and message
 For the time being, we will generate some mock data based on our design notes from the client story.
 ```javascript
 let topics = {
-    authenticated:{
+    settings:{
         id:1,
         view:{
             conversation:[1,2,3]
@@ -429,12 +425,12 @@ function main(){
     bindConversations();
 
     /* Subscriptions */
-    let authenticationSubscription = PubSubService.subscribe(["authenticated"],(data)=>{
+    let settingsSubscription = PubSubService.subscribe(["settings"],(data)=>{
         bindTo();
         bindProfile();
         bindMessages();
         bindConversations();
-    }); //Subscribe if "authenticated" topic changes
+    }); //Subscribe if "settings" topic changes
     let userSubscription = PubSubService.subscribe(["users"],(data)=>{
         bindTo();
         bindProfile();
@@ -449,16 +445,16 @@ function main(){
     /* Subscriber Listeners */
     //when compose to select box changes
     document.getElementById("compose-to").addEventListener("change",()=>{
-        let conversationFilter = [ authenticationSubscription.get().id].concat(Array.prototype.slice.call(document.querySelectorAll('#compose-to option:checked'),0).map((v,i,a)=> { 
+        let conversationFilter = [ settingsSubscription.get().id].concat(Array.prototype.slice.call(document.querySelectorAll('#compose-to option:checked'),0).map((v,i,a)=> { 
             return parseInt(v.value); 
         })).sort((a,b)=>a-b)
         console.log(conversationFilter);
-        authenticationSubscription.publish({ view:{conversation:conversationFilter }});
+        settingsSubscription.publish({ view:{conversation:conversationFilter }});
     })
 
     //when name field changes
     document.getElementById("edit-user-name").addEventListener("change",(e)=>{
-        let currentUserID = authenticationSubscription.get().id;
+        let currentUserID = settingsSubscription.get().id;
         let newUsersList = userSubscription.get().map((user)=>{
             user.name = user.id===currentUserID ? e.target.value : user.name;
             return user;
@@ -468,7 +464,7 @@ function main(){
 
     //when message is sent
     document.getElementById("send-message").addEventListener("click",(e)=>{
-        let authProfile = authenticationSubscription.get();
+        let authProfile = settingsSubscription.get();
         let newMessage = {
             sent: (new Date()).toJSON(), 
             from: authProfile.id,
@@ -493,18 +489,18 @@ function main(){
 
 /* Binding/Rendering functions */
 function bindTo(){
-    let authProfile = PubSubService.get(["authenticated"]);
+    let authProfile = PubSubService.get(["settings"]);
     let usersList = PubSubService.get(["users"]);
     document.getElementById("compose-to").innerHTML = usersList.map(user=>user.id !== authProfile.id?`<option value="${user.id}" ${authProfile.view.conversation.indexOf(user.id)>=0?"selected":""}>${user.name}</option>`:"").join("");;
 }
 function bindProfile(){
-    let authProfile = PubSubService.get(["authenticated"]);
+    let authProfile = PubSubService.get(["settings"]);
     let userInformation = PubSubService.get(["users"]).find((user)=>user.id===authProfile.id);
     document.getElementById("user-id").value = userInformation.id;
     document.getElementById("edit-user-name").value = userInformation.name;
 }
 function bindMessages(){
-    let authProfile = PubSubService.get(["authenticated"]);
+    let authProfile = PubSubService.get(["settings"]);
     let usersList = PubSubService.get(["users"]);
     let messageList = PubSubService.get(["messages"]);
     document.getElementById("messages").innerHTML = messageList.filter((message)=>{
@@ -523,7 +519,7 @@ function bindMessages(){
     }).join("");
 }
 function bindConversations(){
-    let authProfile = PubSubService.get(["authenticated"]);
+    let authProfile = PubSubService.get(["settings"]);
     let userDict = PubSubService.get(["users"]).reduce((accumulator,user)=>{
         accumulator[user.id]=user
         return accumulator;
@@ -554,7 +550,7 @@ function bindConversations(){
 
 /* Setter functions */
 function setConversation(ids){
-    PubSubService.publish(["authenticated"],{view:{conversation:ids}});
+    PubSubService.publish(["settings"],{view:{conversation:ids}});
 }
 
 let resizeDebouncer = new Debouncer();
@@ -693,6 +689,15 @@ label {
     font-size:.75rem;
 }
 ```
+
+## What's next?
+
+This model can be expanded to do MANY more things that aren't directly covered in the source guide like:
+
+* Scoped data changes within subscriptions.
+* Partial updates data updates, reducing data size
+* GIT style change handling (to multi-component merge conflicts)
+
 ## Additional Notes
 
 ### Frontend Frameworks (i.e. angular, react, riot)
