@@ -2,9 +2,15 @@
 
 ## Overview
 
-Some frontend frameworks, especially those that are unopinionated, leave it up to the developer to choose their own method of handling complex UI transformations from client data model changes. A "Pub Sub" service, is a simple and efficient way to share client data model updates among many components, without utilizing unnecessary resources. These resources in traditional models are usually spent creating observers or setters to the underlying data.
+The Publish & Subscribe pattern is generally defined as a software architecture paradigm where senders of messages, called publishers, send their messages to an intermediary broker which utilizes any form of classification to notify receivers, called subscribers, of those messages. The receivers who have subscribed to those classifications do not need to know who emitted the initial message, but rather only that the message falls under the classification that they have subscribed to. There are several libraries which implement Pub Sub models across a wide variety of domains, and even for the article written here, there are libraries that solve the same problem that can be applied to UI and State management such as mroderick’s PubSubJS. There’s SignalR, with which you can natively configure a Pub Sub model within asp.NET. JMS within Java. Google even has Pub/Sub Client libraries that you can implement within C++, C#, Go, Java, Node.js, PHP, Python, and Ruby. 
+
+So why should you write your own Pub Sub model? Importantly, being able to write a pub sub service from scratch in different environments across different languages can allow you to maintain a sensible software architecture for clients within a tight security and package approval process where you may not be granted the opportunity to use your favorite Pub Sub library or API. In some legacy code environments, you may have requirements that don’t allow you to use the syntax due to it’s un-availability within that version. Additionally, many frontend frameworks make it slightly easier to build tightly coupled components which quickly become overly complex if you manage to pass data between parents and children. A quick reminder of the structure of a Pub Sub service and how it works internally, can provide you insight into the types of problems that you can solve. In this article we will be going over the implementation of a Pub Sub service within the paradigm of UI & State Management.
+
+
 
 ![Pub Sub Overview](./images/PubSubOverview.png)
+
+We chose UI & State management because it still illustrates the purpose and scope of a Pub Sub service implementation without involving the complicated cross platform elements that some many network based Pub Sub models employ. Some frontend frameworks, especially those that are unopinionated, leave it up to the developer to choose their own method of handling complex UI transformations from client data model changes. A "PubSub" service, within this context, is a simple and efficient way to share client data model updates among many components, without utilizing unnecessary resources. These resources in traditional models are usually spent creating observers or setters to underlying which can be an expensive process. 
 
 In a nutshell, a Pub Sub service allows a component to publish changes so that other components may be notified and allowed to perform some action related to it's purpose.
 
@@ -36,27 +42,27 @@ First, some terms to consider while building a simple pub-sub model:
 Your "single source of truth". A series of data which is held in a single local client area to be subscribed to. In this simple Pub Sub service, our "topics" will essentially just be a multi-dimensional JSON store.
 
 #### Subscribe
-An action which, when called, stores the data's access path and a subscription object which contains a callback reference into a Subscription array.
+An action which, when called, stores the data's access path and a subscription object which contains a callback reference into a Subscription array. Informally, the act of subscribing means that you would like to be informed when there’s an update to the information subscribed to.
 
 ![Subscribe Story](images/Stories-Figure_1_-_A_Data_Subscription_Story.png)
 
 #### Publish
-An action which, when called, notifies others who have subscribed to a topics path that a change has been made. The Subscribers can then do what they need to in order to update their local views.
+An action which, when called, notifies others who have subscribed to a topics path that a change has been made. The Subscribers can then do what they need to in order to update their local views. Informally, the act of publishing means that you have an update that you would like to share with other subscribers of the topic.
 
 ![Publish Story](images/Stories-Figure_2_-_A_Data_Publishing_Story.png)
 
 #### Get
-An action which, when called, retrieves the topic from the Pub Sub service repository. An equivalent action can be performed by accessing the topics member variable.
+An action which, when called, retrieves the topic from the Pub Sub service repository. An equivalent action can be performed by accessing the topics member variable. Informally, the act of getting means that you want to receive the information, but not necessarily to subscribe to the updates.
 
 ![Get Story](images/Stories-Figure_3_-_A_Data_Get_Story.png)
 
 #### Un-Subscribe
-An action which, when called, removes the data's callback reference from the Subscriber object in order to prevent memory leakages.
+An action which, when called, removes the data's callback reference from the Subscriber object in order to prevent memory leakages. Informally, the act of un-subscribing means that you are telling the service that you will no longer b available to receive updates.
 
 ![Un-Subscribe Story](images/Stories-Figure_4_-_A_Data_Un-Subscription_Story.png)
 
 #### Debounce
-A class which, when instantiated and called, allows you to debounce a function call until some delayed period when calls stop being made. This is useful when you have multiple different datasets mutating a published state in rapid succession. It allows you to delay sending a message to the subscriber until some specified time interval after.
+A class which, when instantiated and called, allows you to delay the final execution of a function call until some delayed period when calls stop being made. This is useful when you have multiple different datasets mutating a published state in rapid succession. It allows you to delay sending a message to the subscriber until some specified time interval after.
 
 ![Debounce Story](images/Stories-Figure_5_-_A_Debounce_Story.png)
 
@@ -92,9 +98,9 @@ A conversation, even though it is described, is not necessarily a saved entity. 
 
 In some business environments, it may be difficult or impossible to retrieve client approval for adding your favorite external libraries. Being able to write your own Pub Sub services while using native rendering techniques can provide an edge for attracting and maintaining clients in security tight environments.
 
-## Where's the code?
+## Where's the code & full guide?
 
-The working code for this article can be found [here](https://github.com/ips-yes/pub-sub)
+The working code and demo for this article can be found [here](https://github.com/ips-yes/pub-sub)
 
 ## What's next?
 
@@ -103,8 +109,6 @@ This model can be expanded to do MANY more things that aren't directly covered i
 * Scoped data changes within subscriptions.
 * Partial updates data updates, reducing data size
 * GIT style change handling (to multi-component merge conflicts)
-
-
 
 ## Guide
 
@@ -157,7 +161,7 @@ Let's build a simple interface to show the users name, conversations and message
 ```
 
 ### Step 2 - Setting up some mock data
-For the time being, we will generate some mock data
+For the time being, we will generate some mock data based on our design notes from the client story.
 ```javascript
 let topics = {
     authenticated:{
@@ -191,7 +195,7 @@ As defined before, we have a couple of features that we need to build into our s
 
 #### Step 3a - The Subscriber Class
 
-The Subscriber class provides a repository for your "single source of truth" as well as some helper functions to build the subscriptions
+The Subscriber class provides a repository for your "single source of truth" as well as some helper functions to build the subscriptions.
 
 ```javascript
 class Subscriber {
@@ -281,9 +285,9 @@ class Subscriber {
 ```
 
 #### Step 3c - The Publish Function
-Our first parameter *path* represents the path to the data we are subscribed to. If you look at the subscribe function, you will notice that the object returned has the path already embedded to simplify the publish call from the perspective of the subscribing component
+Our first parameter *path* represents the path to the data we are subscribed to. If you look at the subscribe function, you will notice that the object returned has a publish function as well with the path already embedded to simplify the publish call from the perspective of the subscribing component.
 
-Our second parameter *data* represents only the new state of the data at the path subscribed. This is what would be modified in the case of the
+Our second parameter *data* represents the new state of the data at the path subscribed. This is what would be modified within the topic specified in the first parameter.
 
 ```javascript
 class Subscriber {
@@ -304,7 +308,7 @@ class Subscriber {
 ```
 "pluck? where did that come from?"
 
-It has to be written! To guarantee that the data we are accessing is from the "single source of truth" and that we aren't making or passing a copy at any point, we've wrapped a recursive function call, utilizing the topic member and the path to the subscribed data. The pluck function simply keeps traversing the path provided until there are no more items to traverse.
+It has to be written! To guarantee that the data we are accessing is from the "single source of truth" and that we aren't making or passing a copy at any point, we've wrapped a recursive function call, utilizing the topic member and the path to the subscribed data. The pluck function simply keeps traversing the path provided until there are no more items to traverse. You'll notice within other pub sub libraries that the path is simply a string accessor that get's evaluated. I prefer to build a pluck function that utilizes the accessor as an array simply because I've built another recursive library that utilizes path's and constructor patterns to traverse multi-dimensional data. By maintaining the ability to type the data appropriately, I'm able to use constructor types that noramlly would be lost when converted to a string.
 
 ```javascript
 class Subscriber {
@@ -695,11 +699,11 @@ label {
 
 The following comments are recommendations based on prior experience implementing "Pub Sub" models:
 
-1) Storing data subscriptions within the component models that handle the business logic of an application.
+1) Store data subscriptions within the component models that handle the business logic of an application.
 
 2) Subscriptions should be created within the mount lifecycle and saved within the component state for re-use later on with any bound event listeners from your ui components. 
 
-3) Decoupling generic layout components from wrapping business logic is good practice if you plan on re-using those components across business domains. By creating generic components and wrapping them up in business logic, you can bootstrap the reusability or your components and generate UI Entity Frameworks that work for your development teams
+3) Decoupling generic layout components from wrapping business logic is good practice if you plan on re-using those components across your applications business domains. By creating generic components and wrapping them up in business logic, you can bootstrap the reusability or your components and generate UI Entity Frameworks that work for your development teams.
 
 ### Close to Standards
 
