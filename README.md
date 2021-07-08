@@ -381,7 +381,7 @@ class Debouncer {
 export default Debouncer;
 ```
 
-Here are the changes to Subscriber.subscribe to add the debouncer we've just created
+Here are the changes to Subscriber.subscribe & Subscriber.publish to add & implement the debouncer we've just created
 ```javascript
 import Debouncer from Debouncer;
 class Subscriber {
@@ -394,6 +394,15 @@ class Subscriber {
             this.subscriptions[subpath]=[subscription];
             this.subscriptions[subpath].debouncer = new Debouncer(); //new debouncer for
         }
+    }
+    //...
+    publish(path,data){
+        Object.assign(this.pluck(this.topic,path),data);  //assign changes
+        this.subscriptions[path.join("-")].debouncer.debounce(()=>{ //wrap final subscriber notifications in debouncer
+            this.subscriptions[path.join("-")].forEach((subscription)=>{
+                subscription.callback(this.pluck(this.topic,path),subscription);
+            });
+        })
     }
 }
 ```
